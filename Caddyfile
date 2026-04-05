@@ -1,0 +1,26 @@
+{
+	email ssato@gmail.com
+}
+
+localhost {
+
+	tls {
+		protocols tls1.2 tls1.3
+	}
+
+	handle_path /api/* {
+		reverse_proxy http://api:8080 {
+			header_up X-Real-IP {remote_host}
+		}
+	}
+
+	handle {
+		reverse_proxy http://frontend:3000 {
+			header_up X-Real-IP {remote_host}
+		}
+	}
+
+	log {
+		output file /data/access.log
+	}
+}
