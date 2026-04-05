@@ -18,7 +18,7 @@ services:
         # build:
         #     context: ./frontend
         #     dockerfile: Dockerfile
-        image: 414329322336.dkr.ecr.ap-northeast-1.amazonaws.com/my-app/frontend:latest
+        image: 471112681481.dkr.ecr.ap-northeast-1.amazonaws.com/my-app/frontend:latest
         networks:
             - app-network
         deploy:
@@ -30,7 +30,7 @@ services:
         # build:
         #     context: ./api
         #     dockerfile: Dockerfile
-        image: 414329322336.dkr.ecr.ap-northeast-1.amazonaws.com/my-app/api:latest
+        image: 471112681481.dkr.ecr.ap-northeast-1.amazonaws.com/my-app/api:latest
         environment:
             JAVA_OPTS: "-Xmx384M -Xms128M"
             SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/appdb
