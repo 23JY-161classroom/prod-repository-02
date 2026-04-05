@@ -1,0 +1,217 @@
+name: 本番環境へ自動デプロイ（EC2）
+
+on:
+    push:
+        branches:
+            - main
+
+permissions:
+    id-token: write
+    contents: read
+
+env:
+    AWS_REGION: ap-northeast-1
+    FRONTEND: my-app/frontend
+    ECR_API: my-app/api
+
+jobs:
+    deploy:
+        name: ビルド・テスト・ECR Push・EC2デプロイ
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: ソースコードを取得
+              uses: actions/checkout@v4
+
+            # =========================
+            # ① React テスト
+            # =========================
+            - name: Node.js セットアップ
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+
+            - name: フロントエンド依存関係インストール
+              run: |
+                  cd frontend
+                  npm ci
+
+            - name: フロントエンドテスト実行
+              id: react_test
+              continue-on-error: true
+              run: |
+                  cd frontend
+                  npm run test
+
+            - name: Reactテスト抽出
+              if: always()
+              id: react_results
+              run: |
+                  FILE=frontend/vitest-report.xml
+
+                  if [ -f "$FILE" ]; then
+                    ALL=$(grep "<testcase" $FILE | \
+                    sed -n 's/.*classname="\([^"]*\)".*name="\([^"]*\)".*/- \1.\2/p')
+
+                    FAIL=$(grep -B1 "<failure" $FILE | grep "<testcase" | \
+                    sed -n 's/.*classname="\([^"]*\)".*name="\([^"]*\)".*/- \1.\2/p')
+
+                    COUNT=$(grep -c "<testcase" $FILE)
+                  fi
+
+                  echo "all<<EOF" >> $GITHUB_OUTPUT
+                  echo "${ALL:-なし}" >> $GITHUB_OUTPUT
+                  echo "EOF" >> $GITHUB_OUTPUT
+
+                  echo "fail<<EOF" >> $GITHUB_OUTPUT
+                  echo "${FAIL:-なし}" >> $GITHUB_OUTPUT
+                  echo "EOF" >> $GITHUB_OUTPUT
+
+                  echo "count=${COUNT:-0}" >> $GITHUB_OUTPUT
+
+            # =========================
+            # ② Spring Boot テスト
+            # =========================
+            - name: Java セットアップ
+              uses: actions/setup-java@v4
+              with:
+                  distribution: temurin
+                  java-version: 21
+
+            - name: Spring Boot テスト実行
+              id: spring_test
+              continue-on-error: true
+              run: |
+                  cd api
+                  ./gradlew test
+
+            - name: Springテスト抽出
+              if: always()
+              id: spring_results
+              run: |
+                  FILES=api/build/test-results/test/TEST-*.xml
+
+                  ALL=$(grep -h "<testcase" $FILES 2>/dev/null | \
+                  sed -n 's/.*name="\([^"]*\)".*classname="\([^"]*\)".*/- \2.\1/p')
+
+                  FAIL=$(grep -h "<failure" $FILES -B1 2>/dev/null | grep "<testcase" | \
+                  sed -n 's/.*name="\([^"]*\)".*classname="\([^"]*\)".*/- \2.\1/p')
+
+                  COUNT=$(grep -h -c "<testcase" $FILES 2>/dev/null | awk '{sum+=$1} END {print sum}')
+
+                  echo "all<<EOF" >> $GITHUB_OUTPUT
+                  echo "${ALL:-なし}" >> $GITHUB_OUTPUT
+                  echo "EOF" >> $GITHUB_OUTPUT
+
+                  echo "fail<<EOF" >> $GITHUB_OUTPUT
+                  echo "${FAIL:-なし}" >> $GITHUB_OUTPUT
+                  echo "EOF" >> $GITHUB_OUTPUT
+
+                  echo "count=${COUNT:-0}" >> $GITHUB_OUTPUT
+
+            # =========================
+            # ③ AWS 認証
+            # =========================
+            - name: AWS 認証設定（OIDC）
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+                  aws-region: ${{ env.AWS_REGION }}
+
+            - name: Amazon ECR にログイン
+              id: login-ecr
+              uses: aws-actions/amazon-ecr-login@v2
+
+            # =========================
+            # ④ Docker ビルド & Push
+            # =========================
+            - name: React イメージをビルド & Push
+              id: build_front
+              continue-on-error: true
+              env:
+                  ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+              run: |
+                  docker build -t $ECR_REGISTRY/$FRONTEND:latest ./frontend
+                  docker push $ECR_REGISTRY/$FRONTEND:latest
+
+            - name: Spring Boot イメージをビルド & Push
+              id: build_api
+              continue-on-error: true
+              env:
+                  ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+              run: |
+                  docker build -t $ECR_REGISTRY/$ECR_API:latest ./api
+                  docker push $ECR_REGISTRY/$ECR_API:latest
+
+            # =========================
+            # ⑤ EC2 デプロイ
+            # =========================
+            - name: EC2へSSH接続してデプロイ
+              id: deploy
+              continue-on-error: true
+              uses: appleboy/ssh-action@v1.0.3
+              env:
+                  ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+                  AWS_REGION: ${{ env.AWS_REGION }}
+              with:
+                  host: ${{ secrets.EC2_HOST }}
+                  username: ec2-user
+                  key: ${{ secrets.EC2_SSH_KEY }}
+                  envs: ECR_REGISTRY, AWS_REGION
+                  script: |
+                      cd ~/sample-cicd-app || exit
+
+                      aws ecr get-login-password --region $AWS_REGION | \
+                        docker login --username AWS --password-stdin $ECR_REGISTRY
+
+                      docker compose -f docker-compose.prod.yml pull
+                      docker compose -f docker-compose.prod.yml up -d --no-build
+
+                      docker image prune -f
+
+            # =========================
+            # ⑥ Discord 通知
+            # =========================
+            - name: Discord通知
+              if: always()
+              run: |
+                  if [ "${{ steps.deploy.outcome }}" = "success" ]; then
+                    DEPLOY_STATUS="✅ 成功"
+                    COLOR=3066993
+                  else
+                    DEPLOY_STATUS="❌ 失敗"
+                    COLOR=15158332
+                  fi
+
+                  curl -H "Content-Type: application/json" \
+                    -X POST \
+                    -d @- ${{ secrets.DISCORD_WEBHOOK_URL }} <<EOF
+                  {
+                    "embeds": [{
+                      "title": "🚀 CI/CD 実行結果",
+                      "color": $COLOR,
+                      "fields": [
+                        {
+                          "name": "React テスト（${{ steps.react_results.outputs.count }}件）",
+                          "value": "React テスト一覧\n${{ steps.react_results.outputs.all }}"
+                        },
+                        {
+                          "name": "React 失敗",
+                          "value": "${{ steps.react_results.outputs.fail }}"
+                        },
+                        {
+                          "name": "Spring テスト（${{ steps.spring_results.outputs.count }}件）",
+                          "value": "Spring テスト一覧\n${{ steps.spring_results.outputs.all }}"
+                        },
+                        {
+                          "name": "Spring 失敗",
+                          "value": "${{ steps.spring_results.outputs.fail }}"
+                        },
+                        {
+                          "name": "デプロイ結果",
+                          "value": "$DEPLOY_STATUS"
+                        }
+                      ]
+                    }]
+                  }
+                  EOF
