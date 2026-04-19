@@ -1,0 +1,34 @@
+openapi: 3.1.0
+info:
+  title: チーム開発SNS (仮) API仕様
+  description: |-
+    チーム開発中のAPIの仕様書です。
+  version: 0.1.0
+servers:
+  - url: /
+paths:
+  /auth/login:
+    $ref: 'paths/login.yaml'
+  /auth/logout:
+    $ref: 'paths/logout.yaml'
+  /users:
+    $ref: 'paths/users.yaml'
+  /users/availability:
+    $ref: 'paths/users_availability.yaml'
+  /users/verify-email:
+    $ref: 'paths/users_verify-email.yaml'
+  /users/me:
+    $ref: 'paths/users_me.yaml'
+  /users/me/password:
+    $ref: 'paths/users_me_password.yaml'
+  /users/me/email:
+    $ref: 'paths/users_me_email.yaml'
+tags:
+  - name: auth
+    description: ログインの処理を行う
+  - name: users
+    description: ユーザの取得、登録、編集などの処理を行う
+components:
+  securitySchemes:
+    SessionAuth: 
+      $ref: 'components/securitySchemes/SessionAuth.yaml'

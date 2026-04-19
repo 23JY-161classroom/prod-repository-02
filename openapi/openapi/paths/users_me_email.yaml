@@ -1,0 +1,37 @@
+post:
+  summary: メールアドレス変更
+  description: 認証済みのユーザーがメールアドレスを変更する。再認証及びメールアドレスの到達確認が必要。
+  operationId: changeEmail
+  tags:
+    - users
+  security: 
+    - SessionAuth: []
+  requestBody: 
+    description: 新しく設定するメールアドレス
+    content:
+      application/json:
+        schema: 
+          $ref: '../components/schemas/users/ChangeEmailRequest.yaml'
+  responses:
+    "204":
+      description: 確認メールの送信に成功した (メールアドレスの変更自体は未完了)
+    "401":
+      description: 再認証に失敗した
+      content: 
+        application/json:
+          schema: 
+            $ref: '../components/schemas/common/ProblemDetail.yaml'
+          example:
+            type: "https://problem-registry.smartbear.com/unauthorized"
+            title: メールアドレス変更失敗
+            detail: "再認証に失敗しました"
+    "409":
+      description: 新しいメールアドレスが既に登録されている
+      content: 
+        application/json:
+          schema: 
+            $ref: '../components/schemas/common/ProblemDetail.yaml'
+          example:
+            type: "https://problem-registry.smartbear.com/already-exists"
+            title: メールアドレス変更失敗
+            detail: "指定されたメールアドレスは既に登録されています"

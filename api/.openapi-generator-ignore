@@ -1,0 +1,8 @@
+.openapi-generator-ignore
+README.md
+pom.xml
+src/main/java/org/openapitools/configuration/HomeController.java
+src/main/java/org/openapitools/configuration/SpringDocConfiguration.java
+src/main/java/teqnolo/teqnolo/api/generated/OpenApiGeneratorApplication.java
+src/main/resources/application.properties
+src/test/java/teqnolo/teqnolo/api/generated/OpenApiGeneratorApplicationTests.java

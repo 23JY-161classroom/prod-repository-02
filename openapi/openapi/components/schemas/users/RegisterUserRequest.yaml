@@ -1,0 +1,16 @@
+type: object
+properties:
+  email:
+    $ref: '../common/primitives/UserEmail.yaml'
+  username: 
+    $ref: '../common/primitives/Username.yaml'
+  password: 
+    $ref: '../common/primitives/NewPassword.yaml'
+  password_verify: 
+    $ref: '../common/primitives/NewPassword.yaml'
+    description: 確認用のパスワード。基本はクライアントサイドでチェックするが、サーバーサイドでもチェックする。
+required:
+  - email
+  - username
+  - password
+  - password_verify

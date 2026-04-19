@@ -1,0 +1,6 @@
+type: string
+description: ユーザー名（Twitterの@XXXのXXXに相当する部分）
+pattern: "^[a-zA-Z0-9]+$"
+minLength: 4
+maxLength: 30
+example: "taroden"
