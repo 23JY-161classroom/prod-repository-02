@@ -1,0 +1,11 @@
+type: object
+properties:
+  password:
+    description: 再認証用のパスワード
+    $ref: '../common/primitives/CurrentPassword.yaml'
+  new_email:
+    description: 新しく設定するメールアドレス
+    $ref: '../common/primitives/UserEmail.yaml'
+required:
+  - new_email
+  - password

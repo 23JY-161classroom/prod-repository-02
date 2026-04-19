@@ -1,0 +1,29 @@
+post:
+  summary: ログイン (パスワード)
+  description: |-
+     ユーザー名とパスワードを使ってアプリにログインする。
+     セッション固定化攻撃対策のため、**セッションIDは新しく生成し直す**こと  (`sessionFixation().migrateSession()`)。
+  operationId: loginWithPassword
+  tags:
+    - auth
+  security: []
+  requestBody:
+    description: パスワードを使ってシステムにログインする
+    content:
+      application/json:
+        schema: 
+          $ref: '../components/schemas/auth/LoginWithPasswordRequest.yaml'
+    required: true
+  responses:
+    "200": 
+      description: ログインに成功したら、ユーザ名に関連付けられたセッションを払い出す
+    "401":
+      description: ユーザー名またはパスワードが異なる。あるいはアカウントがロックアウトされているなどでログインに失敗した。
+      content:
+        application/problem+json:
+          schema: 
+            $ref: '../components/schemas/common/ProblemDetail.yaml'
+          example:
+            type: "https://problems-registry.smartbear.com/unauthorized"
+            title: 認証失敗
+            detail: "ユーザー名またはパスワードが異なります"
