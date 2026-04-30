@@ -1,9 +1,9 @@
-FROM eclipse-temurin:17-jdk AS builder
+FROM eclipse-temurin:25-jdk AS builder
 WORKDIR /app
 COPY . .
 RUN ./gradlew bootJar --no-daemon
 
-FROM eclipse-temurin:17-jre
+FROM amazoncorretto:25-alpine
 WORKDIR /app
 COPY --from=builder /app/build/libs/*.jar app.jar
 CMD ["java", "-jar", "app.jar"]

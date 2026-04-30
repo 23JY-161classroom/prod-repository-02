@@ -1,0 +1,15 @@
+type: object
+properties:
+  email:
+    $ref: '../common/primitives/UserEmail.yaml'
+  username:
+    $ref: '../common/primitives/Username.yaml'
+  context:
+    description: 有効性チェックを行うコンテキスト。updateの場合は自身のユーザーIDを検索対象から除外する
+    type: string
+    enum:
+      - register
+      - update
+required:
+  - context
+

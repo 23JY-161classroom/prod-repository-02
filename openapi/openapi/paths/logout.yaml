@@ -1,0 +1,11 @@
+post: 
+  summary: ログアウト
+  description: Cookie で指定されたセッションを無効化してログアウトする
+  operationId: logout
+  tags:
+    - auth
+  security: 
+    - SessionAuth: []
+  responses:
+    "204":
+      description: ログアウトに成功した

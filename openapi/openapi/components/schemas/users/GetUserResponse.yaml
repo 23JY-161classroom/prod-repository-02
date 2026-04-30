@@ -1,0 +1,7 @@
+type: object
+properties:
+  username: 
+    $ref: '../common/primitives/Username.yaml'
+  email:
+    $ref: '../common/primitives/UserEmail.yaml'
+  

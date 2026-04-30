@@ -1,0 +1,24 @@
+get:
+  summary: メールアドレス認証
+  description: 登録したメールアドレスに送られたマジックリンクを踏むと、メールアドレスの認証に成功する
+  operationId: verifyEmail
+  tags:
+    - users
+  security: []
+  parameters:
+    - in: query
+      name: token
+      description: メールアドレス認証に用いる十分にランダムなトークン
+      required: true
+      schema:
+        type: string
+        pattern: "^[a-zA-Z0-9]{64}$"
+  responses:
+    "302":
+      description: メールアドレス認証完了画面 / エラー画面にリダイレクトする
+      headers:
+        Location:
+          description: リダイレクト先は画面のルーティングに合わせる
+          schema: 
+            type: string
+            format: url

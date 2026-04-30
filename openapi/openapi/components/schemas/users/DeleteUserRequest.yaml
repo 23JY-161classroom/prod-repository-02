@@ -1,0 +1,4 @@
+type: object
+properties:
+  password:
+    $ref: '../common/primitives/CurrentPassword.yaml'

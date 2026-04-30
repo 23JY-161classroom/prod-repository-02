@@ -1,0 +1,52 @@
+package teqnolo.teqnolo.api.generated.controller;
+
+import teqnolo.teqnolo.api.generated.model.ChangeEmailRequest;
+import teqnolo.teqnolo.api.generated.model.ChangePasswordRequest;
+import teqnolo.teqnolo.api.generated.model.CheckUserAvailability200Response;
+import teqnolo.teqnolo.api.generated.model.CheckUserAvailabilityRequest;
+import teqnolo.teqnolo.api.generated.model.DeleteUserRequest;
+import teqnolo.teqnolo.api.generated.model.FindSelf200Response;
+import teqnolo.teqnolo.api.generated.model.LoginWithPassword401Response;
+import org.springframework.lang.Nullable;
+import teqnolo.teqnolo.api.generated.model.RegisterUserRequest;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
+
+import jakarta.validation.constraints.*;
+import jakarta.validation.Valid;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import jakarta.annotation.Generated;
+
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2026-04-19T17:50:12.030732900+09:00[Asia/Tokyo]", comments = "Generator version: 7.21.0")
+@Controller
+@RequestMapping("${openapi.sNSAPI.base-path:}")
+public class UsersApiController implements UsersApi {
+
+    private final UsersApiDelegate delegate;
+
+    public UsersApiController(@Autowired(required = false) UsersApiDelegate delegate) {
+        this.delegate = Optional.ofNullable(delegate).orElse(new UsersApiDelegate() {});
+    }
+
+    @Override
+    public UsersApiDelegate getDelegate() {
+        return delegate;
+    }
+
+}

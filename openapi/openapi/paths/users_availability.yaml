@@ -1,0 +1,42 @@
+post:
+  summary: ユーザー識別子の有効性チェック
+  description: ユーザー名やメールアドレスに重複がないか確認する
+  operationId: checkUserAvailability
+  tags:
+    - users
+  security: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/users/CheckUserAvailabilityRequest.yaml'
+  responses:
+    "200":
+      description: ユーザーIDの重複チェックの結果
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/users/CheckUserAvailabilityResponse.yaml'
+    "401":
+      description: 未認証の状態で context=update を呼び出した。（※特にこの挙動にリスクはなさそうだが、仕様外の呼び出しにはエラーで対応するべきか）
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/common/ProblemDetail.yaml'
+          example:
+            title: 遷移エラー
+            detail: 更新用のバリデーションは、認証済みの場合に限って使用できます
+            type: "https://problem-registry.smartbear.com/unauthorized"
+    "422":
+      description: ユーザーIDのチェック以前に、バリデーションに引っかかった
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/common/ProblemDetail.yaml'
+          example:
+            type: "https://problem-registry.smartbear.com/validation-error"
+            title: 不正な値
+            detail: 指定したユーザー名のフォーマットが不正です
+  
+    
