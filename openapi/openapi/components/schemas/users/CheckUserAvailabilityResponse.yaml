@@ -1,0 +1,14 @@
+type: object
+properties:
+  username: 
+    type: object
+    properties:
+      available: 
+        description: ユーザー名に重複がなければ `true`
+        type: boolean
+  email:
+    type: object
+    properties:
+      available: 
+        description: メールアドレスに重複がなければ `true`
+        type: boolean

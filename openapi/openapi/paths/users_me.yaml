@@ -1,0 +1,52 @@
+get:
+  summary: 自分の情報取得
+  description: 自分のユーザー情報を取得する
+  operationId: findSelf
+  tags:
+    - users
+  security:
+    - SessionAuth: []
+  responses:
+    "200":
+      description: 自身のユーザー情報
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/users/GetUserResponse.yaml'
+    "401":
+      description: 未認証の状態でアクセスした
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/users/GetUserResponse.yaml'
+          example:
+            title: 権限エラー
+            detail: 自身のユーザーIDを取得するためには、ログインが必要です。
+delete:
+  summary: 退会
+  description: ユーザーを削除する。再認証が必要。
+  operationId: deleteUser
+  tags:
+    - users
+  security:
+    - SessionAuth: []
+  requestBody:
+    description: 再認証用のパスワードを指定する
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/users/DeleteUserRequest.yaml'
+  responses:  
+    "204": 
+      description: ユーザーの削除に成功した
+    "401":
+      description: 現在のパスワードが間違っている、またはロックアウトによって、再設定に失敗した
+      content: 
+        application/json:
+          schema: 
+            $ref: '../components/schemas/common/ProblemDetail.yaml'
+          example:
+            type: "https://problem-registry.smartbear.com/unauthorized"
+            title: 削除失敗
+            detail: "現在のパスワードが異なります"
+    

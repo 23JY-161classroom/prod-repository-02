@@ -1,0 +1,36 @@
+post: 
+  summary: ユーザ登録
+  description: ユーザー登録を行う。この際、詳細なプロフィール情報は入力項目に含めない。なお、この段階ではメールアドレス未認証のため、有効化されていないことに注意
+  operationId: registerUser
+  tags:
+    - users
+  security: []
+  requestBody: 
+    description: パスワードやユーザ名などのユーザー登録に必要な情報を指定する。
+    content: 
+      application/json:
+        schema: 
+          $ref: '../components/schemas/users/RegisterUserRequest.yaml'
+  responses:
+    "204":
+      description: ユーザー登録に成功したら、新しいユーザー名を返す
+    "409":
+      description: メールアドレスやユーザー名が重複している
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/common/ProblemDetail.yaml'
+          example:
+            type: https://problems-registry.smartbear.com/already-exists
+            title: 登録失敗
+            detail: メールアドレスが既に登録されています
+    "422":
+      description: 仕様上不正な形式でログインが行われた
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/common/ProblemDetail.yaml'
+          example:
+            type: https://problems-registry.smartbear.com/validation-error
+            title: 登録失敗
+            detail: 確認用のパスワードが一致しません
